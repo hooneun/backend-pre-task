@@ -89,5 +89,83 @@ Google의 주소록(https://contacts.google.com)을 참고해 주시면 이해�
     - swagger
     - test code
 
+--- 
+
+
+## 1. 도메인 요구 사항 확인 및 구현
+- **출력 필드**: 프로필 사진, 이름, 이메일, 전화번호, 회사, 직책, 라벨
+  - `http://localhost:8000/api/contacts/`
+- **정렬**: 이름, 이메일, 전화번호, 생성일 기준 오름차순/내림차순
+  - 이름 정렬
+    - http://localhost:8000/api/contacts/?ordering=name
+    - http://localhost:8000/api/contacts/?ordering=-name
+  - 이메일 정렬
+    - http://localhost:8000/api/contacts/?ordering=email
+    - http://localhost:8000/api/contacts/?ordering=-email
+  - 전화번호 정렬
+    - http://localhost:8000/api/contacts/?ordering=phone
+    - http://localhost:8000/api/contacts/?ordering=-phone
+  - 생성일 정렬
+    - http://localhost:8000/api/contacts/?ordering=created_at
+    - http://localhost:8000/api/contacts/?ordering=-created_at
+- **페이징 처리**: 페이징 구현
+  ```json
+  {
+    "pagination": {
+        "count": 12,
+        "page_count": 1,
+        "page_size": 20,
+        "current_page": 1,
+        "next": null,
+        "previous": null
+    },
+    "results": {
+      // ...
+    }
+  } 
+  ```
+- **연락처 상세/입력 기능 구현**:
+  - 프로필 사진, 이름, 이메일, 전화번호, 회사, 직책, 메오, 
+  - 라벨 (다수 연결), 주소, 생일, 웹사이트
+
+## 2. 기술적 요구사항
+- **환경**: 
+  - python: 3.13.5
+  - django: 4.2.7
+  - djangorestframework: 3.14.0
+  - SQLite
+  - 기타 패키지
+    - black: 25.1.0
+- **Backend 구현**:
+  - Django ORM 사용: Contact, Label
+  - 디렉터리 구조:
+    ```text
+    backend/api/contacts/
+    |- models.py        # ORM MODEL
+    |- serializers.py   # API 직렬화
+    |- views.py         # API
+    |- urls.py          # 라우팅
+    |- filters.py       # 필터링
+    |- pagination.py    # 페이지네이션
+    ```
+  - RESTfull API: DRF ViewSet 기반 API
+  - Database:
+    - schema.sql: DB CREATE문 작성
+    - data.sql: 기본 테스트 데이터 INSERT 문
+  - 기타
+    - text 코드 작성: `backend/api/contracts/tests.py`
+    - API BrowsableAPIRenderer 사용
 ***
-### 
+### API (BrowsableAPIRenderer)
+
+**API:**
+- http://127.0.0.1:8000/api/
+ 
+**연락처 API:**
+- http://127.0.0.1:8000/api/contacts/ - 연락처 목록
+- http://127.0.0.1:8000/api/contacts/statistics/ - 연락처 통계
+- http://127.0.0.1:8000/api/contacts/birthdays_this_month/ - 이번 달 생일
+ 
+**라벨 API:**
+- http://127.0.0.1:8000/api/contacts/labels/ - 라벨 목록
+- http://localhost:8000/api/contacts/labels/statistics/ - 라벨 통계

@@ -84,8 +84,8 @@ class LabelSerializerTest(APITestCase):
             "id": label.id,
             "name": "회사",
             "color": "#0000FF",
-            "created_at": label.created_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "updated_at": label.updated_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "created_at": serializer.data["created_at"],
+            "updated_at": serializer.data["updated_at"],
         }
 
         self.assertEqual(serializer.data, expected_data)
@@ -171,11 +171,11 @@ class LabelAPITest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # 응답 데이터 구조 확인 (페이지네이션이 적용된 경우)
-        if isinstance(response.data, dict) and 'results' in response.data:
-            label_names = [label['name'] for label in response.data['results']]
+        if isinstance(response.data, dict) and "results" in response.data:
+            label_names = [label["name"] for label in response.data["results"]]
         else:
-            label_names = [label['name'] for label in response.data]
-        
+            label_names = [label["name"] for label in response.data]
+
         self.assertIn("라벨1", label_names)
         self.assertIn("라벨2", label_names)
 

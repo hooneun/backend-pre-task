@@ -1,20 +1,23 @@
 # Django REST Framework의 핵심 컴포넌트들을 가져옵니다
 from rest_framework import viewsets, filters, status  # ViewSet, 필터, HTTP 상태코드
-from rest_framework.decorators import api_view, action  # API 뷰 데코레이터, 커스텀 액션 데코레이터
+from rest_framework.decorators import (
+    api_view,
+    action,
+)  # API 뷰 데코레이터, 커스텀 액션 데코레이터
 from rest_framework.response import Response  # API 응답 객체
-from rest_framework.request import Request   # API 요청 객체
+from rest_framework.request import Request  # API 요청 객체ª
 from django_filters.rest_framework import DjangoFilterBackend  # 필터링 백엔드
 from django.db.models import Q, Count  # Q: 복잡한 쿼리 조건, Count: 개수 집계 함수
 
 # 현재 앱의 다른 모듈들을 가져옵니다
-from .filters import ContactFilter      # 연락처 필터링 클래스
-from .models import Label, Contact      # 데이터베이스 모델들
-from .pagination import CustomPageNumberPagination  # 커스텀 페이지네이션
-from .serializers import (              # 시리얼라이저들 (데이터 직렬화/역직렬화)
-    LabelSerializer,                    # 라벨 기본 시리얼라이저
-    ContactSerializer,                  # 연락처 상세 시리얼라이저
-    ContactListSerializer,              # 연락처 목록용 간소화 시리얼라이저
-    LabelStatsSerializer,               # 라벨 통계용 시리얼라이저
+from .filters import ContactFilter  # 연락처 필터링 클래스
+from .models import Label, Contact  # 데이터베이스 모델들
+from .pagination import CustomPageNumberPagination  # 커스텀 페이지네이션ª
+from .serializers import (  # 시리얼라이저들 (데이터 직렬화/역직렬화)
+    LabelSerializer,  # 라벨 기본 시리얼라이저
+    ContactSerializer,  # 연락처 상세 시리얼라이저
+    ContactListSerializer,  # 연락처 목록용 간소화 시리얼라이저
+    LabelStatsSerializer,  # 라벨 통계용 시리얼라이저
 )
 
 
@@ -28,10 +31,10 @@ def test_api(request: Request) -> Response:
     """
     return Response(  # JSON 형태로 응답 반환
         {
-            "message": "success",           # 성공 메시지
-            "endpoints": {                  # 사용 가능한 API 엔드포인트들
-                "contacts": "/api/contacts/",   # 연락처 관련 API
-                "labels": "/api/labels/",       # 라벨 관련 API
+            "message": "success",  # 성공 메시지
+            "endpoints": {  # 사용 가능한 API 엔드포인트들
+                "contacts": "/api/contacts/",  # 연락처 관련 API
+                "labels": "/api/labels/",  # 라벨 관련 API
             },
         }
     )
@@ -49,6 +52,7 @@ class LabelViewSet(viewsets.ModelViewSet):
     - PATCH /labels/{id}/: 특정 라벨 부분 수정
     - DELETE /labels/{id}/: 특정 라벨 삭제
     """
+
     # 기본 쿼리셋: 모든 라벨을 대상으로 합니다
     queryset = Label.objects.all()
     # 사용할 시리얼라이저: 라벨 데이터를 JSON으로 변환/역변환
@@ -56,9 +60,9 @@ class LabelViewSet(viewsets.ModelViewSet):
 
     # 필터링, 검색, 정렬 기능을 위한 백엔드 설정
     filter_backends = [
-        DjangoFilterBackend,    # 필드 기반 필터링 (예: ?name=가족)
-        filters.SearchFilter,   # 텍스트 검색 (예: ?search=가족)
-        filters.OrderingFilter, # 정렬 (예: ?ordering=name)
+        DjangoFilterBackend,  # 필드 기반 필터링 (예: ?name=가족)
+        filters.SearchFilter,  # 텍스트 검색 (예: ?search=가족)
+        filters.OrderingFilter,  # 정렬 (예: ?ordering=name)
     ]
     # 검색 가능한 필드들: 라벨명으로만 검색 가능
     search_fields = ["name"]
@@ -81,7 +85,9 @@ class LabelViewSet(viewsets.ModelViewSet):
         # Count("contacts"): contacts 필드(다대다 관계)의 개수를 셈
         labels_with_counts = Label.objects.annotate(
             contact_count=Count("contacts")  # contact_count라는 가상 필드 추가
-        ).order_by("-contact_count")  # 연락처 개수가 많은 순으로 정렬
+        ).order_by(
+            "-contact_count"
+        )  # 연락처 개수가 많은 순으로 정렬
 
         # 통계용 시리얼라이저로 데이터 변환 (many=True: 여러 객체를 한번에 처리)
         serializer = LabelStatsSerializer(labels_with_counts, many=True)
@@ -117,14 +123,15 @@ class ContactViewSet(viewsets.ModelViewSet):
     - PATCH /contacts/{id}/: 특정 연락처 부분 수정
     - DELETE /contacts/{id}/: 특정 연락처 삭제
     """
+
     # 기본 쿼리셋 - prefetch_related로 라벨 정보도 함께 미리 가져와서 성능 최적화
     queryset = Contact.objects.prefetch_related("labels")
 
     # 필터링, 검색, 정렬 기능 설정
     filter_backends = [
-        DjangoFilterBackend,    # 필드별 필터링
-        filters.SearchFilter,   # 텍스트 검색
-        filters.OrderingFilter, # 정렬
+        DjangoFilterBackend,  # 필드별 필터링
+        filters.SearchFilter,  # 텍스트 검색
+        filters.OrderingFilter,  # 정렬
     ]
     # 간단한 필터링 가능한 필드들
     filterset_fields = ["labels", "company"]
@@ -197,9 +204,11 @@ class ContactViewSet(viewsets.ModelViewSet):
         now = datetime.now()  # 현재 날짜와 시간
         # birthday 필드의 월(month)이 현재 월과 같고, 생일이 NULL이 아닌 연락처들 조회
         contacts = Contact.objects.filter(
-            birthday__month=now.month,      # 생일의 월이 현재 월과 같음
-            birthday__isnull=False         # 생일이 NULL이 아님
-        ).prefetch_related("labels")       # 라벨 정보도 함께 조회 (성능 최적화)
+            birthday__month=now.month,  # 생일의 월이 현재 월과 같음
+            birthday__isnull=False,  # 생일이 NULL이 아님
+        ).prefetch_related(
+            "labels"
+        )  # 라벨 정보도 함께 조회 (성능 최적화)
 
         # 목록용 시리얼라이저로 데이터 변환
         serializer = ContactListSerializer(contacts, many=True)
@@ -217,32 +226,28 @@ class ContactViewSet(viewsets.ModelViewSet):
         stats = {
             # 전체 연락처 수
             "total_contacts": Contact.objects.count(),
-            
             # 이메일이 있는 연락처 수 (NULL이 아니고 빈 문자열도 아님)
             "with_email": Contact.objects.filter(email__isnull=False)
             .exclude(email="")
             .count(),
-            
             # 전화번호가 있는 연락처 수
             "with_phone": Contact.objects.filter(phone__isnull=False)
             .exclude(phone="")
             .count(),
-            
             # 생일이 등록된 연락처 수
             "with_birthday": Contact.objects.filter(birthday__isnull=False).count(),
-            
             # 서로 다른 회사 수 (중복 제거)
             "companies": Contact.objects.filter(company__isnull=False)
-            .exclude(company="")        # 회사가 있는 연락처만
-            .values("company")          # 회사명만 선택
-            .distinct()                # 중복 제거
-            .count(),                  # 개수 세기
+            .exclude(company="")  # 회사가 있는 연락처만
+            .values("company")  # 회사명만 선택
+            .distinct()  # 중복 제거
+            .count(),  # 개수 세기
         }
         return Response(stats)  # JSON으로 통계 정보 반환
 
     # 커스텀 액션: 연락처에 라벨 추가
     @action(detail=True, methods=["post"])
-    def add_labels(self, request, pk=None):
+    def add_labels(self, request):
         """
         특정 연락처에 라벨 추가 API
         POST /contacts/{id}/add_labels/
@@ -257,8 +262,8 @@ class ContactViewSet(viewsets.ModelViewSet):
         # 라벨 ID가 제공되지 않은 경우 에러 응답
         if not label_ids:
             return Response(
-                {"error": "label_ids가 필요합니다."}, 
-                status=status.HTTP_400_BAD_REQUEST  # 400 Bad Request
+                {"error": "label_ids가 필요합니다."},
+                status=status.HTTP_400_BAD_REQUEST,  # 400 Bad Request
             )
 
         # 제공된 ID들로 라벨 객체들 조회
@@ -272,7 +277,7 @@ class ContactViewSet(viewsets.ModelViewSet):
 
     # 커스텀 액션: 연락처에서 라벨 제거
     @action(detail=True, methods=["post"])
-    def remove_labels(self, request, pk=None):
+    def remove_labels(self, request):
         """
         특정 연락처에서 라벨 제거 API
         POST /contacts/{id}/remove_labels/
@@ -287,8 +292,7 @@ class ContactViewSet(viewsets.ModelViewSet):
         # 라벨 ID가 제공되지 않은 경우 에러 응답
         if not label_ids:
             return Response(
-                {"error": "label_ids가 필요합니다."}, 
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "label_ids가 필요합니다."}, status=status.HTTP_400_BAD_REQUEST
             )
 
         # 제공된 ID들로 라벨 객체들 조회
