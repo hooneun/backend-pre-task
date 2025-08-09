@@ -13,9 +13,30 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
-from django.urls import path
+from django.http import JsonResponse
+from django.urls import path, include
+from rest_framework.request import Request
+
+
+def api_root(request: Request) -> JsonResponse:
+    return JsonResponse(
+        {
+            "message": "연락처 API",
+            "version": "1.0.0",
+            "endpoints": {
+                "contacts": "/api/contacts/",
+                "labels": "/api/contacts/labels/",
+                "admin": "/admin/",
+                "docs": "/api/docs/",  # 나중에 Swagger 문서화 시 사용
+            },
+        }
+    )
+
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
+    path("api/", api_root),
+    path("api/", include([path("contacts/", include("api.contacts.urls"))])),
 ]

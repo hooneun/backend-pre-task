@@ -10,3 +10,6 @@ __pycache__/
 # etc
 .swp
 
+venv/
+
+backend/db.sqlite3
